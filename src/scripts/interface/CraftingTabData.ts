@@ -175,7 +175,7 @@ class CraftingTabData {
   prepareInventoryDataForSystem(
     craftingSystem: CraftingSystem,
     actor: Actor,
-    inventory: Inventory<ItemData>,
+    inventory: Inventory<ItemData,Actor>,
   ): InventoryContents {
     const inventoryContents: InventoryContents = {
       ownedComponents: [],

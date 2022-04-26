@@ -11,11 +11,6 @@ import HOOKS from './hooks';
 import { CompendiumImportingCraftingSystemFactory, CraftingSystemFactory } from './crafting/CraftingSystemFactory';
 import type { GameSystem } from './system/GameSystem';
 
-Hooks.once('ready', loadCraftingSystems);
-Hooks.once('ready', () => {
-  FabricateLifecycle.init();
-});
-
 /**
  * Loads all Crafting Systems with a System Specification declared with the Crafting System Registry.
  * */
@@ -51,7 +46,7 @@ async function loadCraftingSystem(systemSpec: CraftingSystemSpecification): Prom
   }
   const craftingSystemFactory = <CraftingSystemFactory>new CompendiumImportingCraftingSystemFactory(systemSpec);
   const craftingSystem = await craftingSystemFactory.make();
-  craftingSystem.enabled = game.settings.get(
+  craftingSystem.enabled = <boolean>game.settings.get(
     CONSTANTS.module.name,
     CONSTANTS.settingsKeys.craftingSystem.enabled(systemSpec.id),
   );
@@ -87,6 +82,11 @@ export const setupHooks = (): void => {
 
 export const readyHooks = (): void => {
   checkSystem();
+
+  loadCraftingSystems();
+
+  FabricateLifecycle.init();
+
 };
 
 const module = {

@@ -1,8 +1,8 @@
-import { CraftingComponent } from '../common/CraftingComponent';
-import Properties from '../Properties';
+import type { CraftingComponent } from '../common/CraftingComponent';
 import { FabricateItem } from '../common/FabricateItem';
-import { Recipe } from '../crafting/Recipe';
+import type { Recipe } from '../crafting/Recipe';
 import { CompendiumEntry, FabricateItemType } from '../compendium/CompendiumData';
+import CONSTANTS from '../constants';
 
 class PartDictionary {
   private readonly _components: Map<string, CraftingComponent> = new Map();
@@ -15,7 +15,7 @@ class PartDictionary {
 
   public static typeOf(item: Item): FabricateItemType | 'NONE' {
     const itemType: FabricateItemType = <FabricateItemType>(
-      item.getFlag(Properties.module.name, Properties.flagKeys.item.fabricateItemType)
+      item.getFlag(CONSTANTS.module.name, CONSTANTS.flagKeys.item.fabricateItemType)
     );
     if (itemType) {
       return itemType;
@@ -32,7 +32,7 @@ class PartDictionary {
 
   private static getIdentifier(item: Item): string {
     const identity: CompendiumEntry = <CompendiumEntry>(
-      item.getFlag(Properties.module.name, Properties.flagKeys.item.identity)
+      item.getFlag(CONSTANTS.module.name, CONSTANTS.flagKeys.item.identity)
     );
     return FabricateItem.globalIdentifier(identity.partId, identity.systemId);
   }

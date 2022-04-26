@@ -1,18 +1,19 @@
 import * as fs from 'fs';
 
-import { CraftingSystem } from './CraftingSystem';
-import type { CraftingSystemSpecification } from './CraftingSystemSpecification';
-import { CraftingComponent } from './CraftingComponent';
 import { Recipe } from './Recipe';
-import { Ingredient } from './Ingredient';
-import { FabricationAction } from './FabricationAction';
-import { FabricateCompendiumData, FabricateItemType } from '../game/CompendiumData';
-import type { FabricateItem } from './FabricateItem';
 import type { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
+import type { CraftingSystemSpecification } from '../system/CraftingSystemSpecification';
+import type { CraftingSystem } from '../system/CraftingSystem';
+import { CraftingComponent } from '../common/CraftingComponent';
+import type { Ingredient } from './Ingredient';
+import { FabricationAction } from '../core/FabricationAction';
+import CONSTANTS from '../constants';
+import { FabricateItemType } from '../common/FabricateItem';
+import type { FabricateCompendiumData } from '../compendium/CompendiumData';
 
 interface CraftingSystemFactory {
-  systemSpecification: CraftingSystemSpecification<{}>;
-  make(): Promise<CraftingSystem<{}>>;
+  systemSpecification: CraftingSystemSpecification;
+  make(): Promise<CraftingSystem>;
 }
 
 interface BasicSystemData {
@@ -21,17 +22,17 @@ interface BasicSystemData {
 }
 
 abstract class AbstractCraftingSystemFactory implements CraftingSystemFactory {
-  private readonly _systemSpecification: CraftingSystemSpecification<{}>;
+  private readonly _systemSpecification: CraftingSystemSpecification;
 
-  constructor(systemSpecification: CraftingSystemSpecification<{}>) {
+  constructor(systemSpecification: CraftingSystemSpecification) {
     this._systemSpecification = systemSpecification;
   }
 
-  get systemSpecification(): CraftingSystemSpecification<{}> {
+  get systemSpecification(): CraftingSystemSpecification {
     return this._systemSpecification;
   }
 
-  async make(): Promise<CraftingSystem<{}>> {
+  async make(): Promise<CraftingSystem> {
     const basicSystemData = await this.prepare();
     const componentErrors: string[] = [];
     basicSystemData.components.forEach((craftingComponent: CraftingComponent) => {
@@ -50,7 +51,7 @@ abstract class AbstractCraftingSystemFactory implements CraftingSystemFactory {
     const recipeErrors: string[] = [];
     const populatedRecipes: Recipe[] = basicSystemData.recipes.map((recipe: Recipe) => {
       const populatedIngredients: Ingredient[] = recipe.ingredients.map((ingredient: Ingredient) => {
-        const craftingComponent = componentDictionary.get(ingredient.partId);
+        const craftingComponent = componentDictionary.get(<string>ingredient.partId);
         if (!craftingComponent) {
           throw new Error(
             `Recipe ${recipe.name} with ID ${recipe.partId} specified an Ingredient that was not found in the Crafting System: ${ingredient.compendiumEntry}.`,

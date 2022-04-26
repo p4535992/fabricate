@@ -33,7 +33,7 @@ class Unit<T extends Identifiable> {
 class Combination<T extends Identifiable> {
   private readonly _amounts: Map<string, Unit<T>>;
 
-  private constructor(amounts: Map<string, Unit<T>>) {
+  constructor(amounts: Map<string, Unit<T>>) {
     this._amounts = amounts;
   }
 

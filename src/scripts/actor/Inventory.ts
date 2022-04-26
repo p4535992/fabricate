@@ -7,8 +7,10 @@ import type { ObjectUtility } from '../foundry/ObjectUtility';
 import type { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/module.mjs';
 import type Document from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/abstract/document.mjs';
 import { ActionType, FabricationAction } from '../core/FabricationAction';
+import type { Recipe } from '../crafting/Recipe';
 
 interface Inventory<D extends ItemData, A extends Actor> {
+  components: any[];
   actor: A;
   ownedComponents: Combination<CraftingComponent>;
   containsIngredients(ingredients: Combination<CraftingComponent>): boolean;
@@ -18,6 +20,7 @@ interface Inventory<D extends ItemData, A extends Actor> {
   perform(actions: FabricationAction<D>[]): Promise<Item[]>;
   prepare(): boolean;
   containsPart(partId:string): boolean;
+  hasAllIngredientsFor(recipe:Recipe);
 }
 
 interface InventorySearch {
@@ -266,6 +269,13 @@ abstract class BaseCraftingInventory<D extends ItemData, A extends Actor> implem
     this._managedItems = builder.managedItems;
     this._game = builder.game;
     this._gameUtils = builder.gameUtils;
+  }
+  components: any[];
+  hasAllIngredientsFor(recipe: Recipe) {
+    throw new Error('Method not implemented.');
+  }
+  containsPart(partId: string): boolean {
+    throw new Error('Method not implemented.');
   }
 
   get actor(): A {

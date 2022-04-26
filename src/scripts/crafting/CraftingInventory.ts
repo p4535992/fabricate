@@ -1,24 +1,43 @@
-import type { Inventory } from './Inventory';
-import type { InventoryRecord } from './InventoryRecord';
-import type { GameSystemType } from '../core/GameSystemType';
-import type { Ingredient } from '../core/Ingredient';
-import type { CraftingComponent } from '../core/CraftingComponent';
-import type { Recipe } from '../core/Recipe';
-import type { FabricateItem } from '../core/FabricateItem';
 import FabricateApplication from '../application/FabricateApplication';
-import { FabricateItemType } from './CompendiumData';
-import type { CraftingSystem } from '../core/CraftingSystem';
 import type { FabricationAction } from '../core/FabricationAction';
 import CONSTANTS from '../constants';
 import type { ItemData } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs';
+import type { Inventory } from '../actor/Inventory';
+import type { InventoryRecord } from '../actor/InventoryRecord';
+import { FabricateItem, FabricateItemType } from '../common/FabricateItem';
+import type { CraftingComponent } from '../common/CraftingComponent';
+import type { Recipe } from './Recipe';
+import type { GameSystem } from '../system/GameSystem';
+import type { Combination } from '../common/Combination';
+import type { EssenceDefinition } from '../common/EssenceDefinition';
+import type { CraftingSystem } from '../system/CraftingSystem';
 
-abstract class CraftingInventory<T extends ItemData> implements Inventory<T> {
+abstract class CraftingInventory<T extends ItemData> implements Inventory<ItemData, Actor> {
   protected readonly _actor: any;
-  protected _supportedGameSystems: GameSystemType[];
+  protected _supportedGameSystems: GameSystem[];
 
   protected constructor(actor: Actor) {
     this._actor = actor;
     this._supportedGameSystems = [];
+  }
+  ownedComponents: Combination<CraftingComponent>;
+  containsIngredients(ingredients: Combination<CraftingComponent>): boolean {
+    throw new Error('Method not implemented.');
+  }
+  containsEssences(essences: Combination<EssenceDefinition>): boolean {
+    throw new Error('Method not implemented.');
+  }
+  selectFor(essences: Combination<EssenceDefinition>): Combination<CraftingComponent> {
+    throw new Error('Method not implemented.');
+  }
+  excluding(ingredients: Combination<CraftingComponent>): Inventory<ItemData, Actor> {
+    throw new Error('Method not implemented.');
+  }
+  perform(actions: FabricationAction<ItemData>[]): Promise<Item[]> {
+    throw new Error('Method not implemented.');
+  }
+  prepare(): boolean {
+    throw new Error('Method not implemented.');
   }
 
   get actor(): Actor {
@@ -29,7 +48,7 @@ abstract class CraftingInventory<T extends ItemData> implements Inventory<T> {
     return this._actor.id;
   }
 
-  get supportedGameSystems(): GameSystemType[] {
+  get supportedGameSystems(): GameSystem[] {
     return this._supportedGameSystems;
   }
 
@@ -49,8 +68,8 @@ abstract class CraftingInventory<T extends ItemData> implements Inventory<T> {
       .reduce((left, right) => left + right, 0);
   }
 
-  public supportsGameSystem(gameSystem: GameSystemType): boolean {
-    return this._supportedGameSystems.some((supported: GameSystemType) => supported === gameSystem);
+  public supportsGameSystem(gameSystem: GameSystem): boolean {
+    return this._supportedGameSystems.some((supported: GameSystem) => supported === gameSystem);
   }
 
   containsIngredient(ingredient: Ingredient): boolean {
@@ -98,24 +117,24 @@ abstract class CraftingInventory<T extends ItemData> implements Inventory<T> {
     if (!recipe.essences || recipe.essences.length === 0) {
       return true;
     }
-    recipe.essences.forEach((essence: string) => {
-      if (outstandingEssencesByType.has(essence)) {
-        outstandingEssencesByType.set(essence, <number>outstandingEssencesByType.get(essence) + 1);
+    recipe.essences.forEach((essence: EssenceDefinition) => {
+      if (outstandingEssencesByType.has(essence.id)) {
+        outstandingEssencesByType.set(essence.id, <number>outstandingEssencesByType.get(essence.id) + 1);
       } else {
-        outstandingEssencesByType.set(essence, 1);
+        outstandingEssencesByType.set(essence.id, 1);
       }
     });
     for (let i = 0; i < this.components.length; i++) {
-      const thisRecord: InventoryRecord<CraftingComponent> = this.components[i];
+      const thisRecord: InventoryRecord<CraftingComponent> = <InventoryRecord<CraftingComponent>>this.components[i];
       if (thisRecord.fabricateItem.essences) {
-        thisRecord.fabricateItem.essences.forEach((essence: string) => {
-          if (outstandingEssencesByType.has(essence)) {
-            const remaining: number = <number>outstandingEssencesByType.get(essence);
+        thisRecord.fabricateItem.essences.forEach((essence: EssenceDefinition) => {
+          if (outstandingEssencesByType.has(essence.id)) {
+            const remaining: number = <number>outstandingEssencesByType.get(essence.id);
             const contribution = thisRecord.totalQuantity;
             if (remaining <= contribution) {
-              outstandingEssencesByType.delete(essence);
+              outstandingEssencesByType.delete(essence.id);
             } else {
-              outstandingEssencesByType.set(essence, remaining - contribution);
+              outstandingEssencesByType.set(essence.id, remaining - contribution);
             }
           }
         });
@@ -162,7 +181,7 @@ abstract class CraftingInventory<T extends ItemData> implements Inventory<T> {
 
   protected lookUp(item: Item): FabricateItem {
     const craftingSystem: CraftingSystem = this.getOwningCraftingSystemForItem(item);
-    const itemType: FabricateItemType = item.getFlag(
+    const itemType: FabricateItemType = <FabricateItemType>item.getFlag(
       CONSTANTS.module.name,
       CONSTANTS.flagKeys.item.fabricateItemType,
     );

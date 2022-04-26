@@ -2,6 +2,7 @@ import {FabricationAction, ActionType} from "./FabricationAction";
 import type { ItemData } from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
 import type { CraftingComponent } from "../common/CraftingComponent";
 import type { Inventory } from "../actor/Inventory";
+import type { Ingredient } from "../crafting/Ingredient";
 
 
 class FabricationHelper {

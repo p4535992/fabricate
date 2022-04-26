@@ -5,6 +5,7 @@ import type { EssenceDefinition } from './EssenceDefinition';
 class CraftingComponent extends FabricateItem {
   private readonly _essences: Combination<EssenceDefinition>;
   private readonly _salvage: Combination<CraftingComponent>;
+  compendiumEntry: any;
 
   constructor(builder: CraftingComponent.Builder) {
     super(builder);
